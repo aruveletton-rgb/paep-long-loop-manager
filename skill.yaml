@@ -1,0 +1,65 @@
+schema_version: '1.0'
+name: paep-long-loop-manager
+version: 1.1.0
+owner: paep-user
+category: project
+description: Plan bounded multi-stage engineering loops with owners, evidence gates and explicit stop conditions for PAEP tasks.
+inputs:
+  - name: repository_path
+    type: path
+    required: true
+    description: Absolute project directory within configured PAEP roots.
+    validation:
+      must_exist: true
+      must_be_directory: true
+  - name: brief
+    type: string
+    required: false
+    default: Review the supplied task context within the declared scope.
+    description: Additional non-sensitive review context.
+outputs:
+  - name: review_report
+    type: artifact
+    required: true
+    description: Evidence-backed review and next actions.
+    media_type: text/markdown
+    path: artifacts/long-loop-report.md
+executor:
+  type: codex
+  adapter: codex
+  mode: review
+  entrypoint: protocol/task-result
+  timeout_seconds: 1800
+  retry:
+    max_attempts: 1
+dependencies:
+  skills: []
+  tools: [filesystem.read]
+  runtimes: []
+  files: []
+permissions:
+  filesystem:
+    read: ['${input.repository_path}']
+    write: []
+  network:
+    enabled: false
+    allowlist: []
+  shell:
+    enabled: false
+    commands: []
+  tools:
+    allow: [filesystem.read]
+  secrets:
+    references: []
+  approval:
+    required_for: [write, network, secret, destructive, shell]
+compatibility:
+  agents: [codex]
+  protocol_version: '1.0'
+  os: [windows, linux, macos]
+protocol:
+  task_template: TASK.md
+  result_template: RESULT.md
+  artifact_root: artifacts/
+  evidence: [task, result, logs, tests]
+
